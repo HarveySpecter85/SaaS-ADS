@@ -16,7 +16,7 @@ None
 
 Decimal phases appear between their surrounding integers in numeric order.
 
-- [ ] **Phase 1: Foundation** - Next.js + Supabase setup, auth, base layout
+- [x] **Phase 1: Foundation** - Next.js + Supabase setup, auth, base layout
 - [ ] **Phase 2: Brand Ingestion** - PDF parsing for brand guidelines, hex/font/tone extraction
 - [ ] **Phase 3: Asset Anchoring** - Product image upload, geometry "lock" system
 - [ ] **Phase 4: Prompt Generation** - Persona-based prompt sets, 50+ variations per set
@@ -36,9 +36,9 @@ Decimal phases appear between their surrounding integers in numeric order.
 **Plans**: 3 plans
 
 Plans:
-- [ ] 01-01: Project Setup (Next.js + Supabase + Tailwind)
-- [ ] 01-02: Team Auth (Supabase Auth + login + middleware)
-- [ ] 01-03: Layout Shell (Sidebar + dashboard home)
+- [x] 01-01: Project Setup (Next.js + Supabase + Tailwind)
+- [x] 01-02: Team Auth (Supabase Auth + login + middleware)
+- [x] 01-03: Layout Shell (Sidebar + dashboard home)
 
 ### Phase 2: Brand Ingestion
 **Goal**: Upload and parse brand guidelines PDFs to extract hex codes, fonts, tone of voice
@@ -107,7 +107,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 →
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Foundation | 0/3 | In progress | - |
+| 1. Foundation | 3/3 | Complete | 2026-01-13 |
 | 2. Brand Ingestion | 0/TBD | Not started | - |
 | 3. Asset Anchoring | 0/TBD | Not started | - |
 | 4. Prompt Generation | 0/TBD | Not started | - |
