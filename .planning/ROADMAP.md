@@ -130,8 +130,12 @@ Plans:
 ### Phase 10: Polish & Integration
 **Goal**: Final integration testing, performance optimization, production deployment
 **Depends on**: Phase 9
-**Research**: Unlikely (integration of existing work)
-**Plans**: TBD
+**Research**: Not needed (polish of existing work)
+**Plans**: 2 plans
+
+Plans:
+- [ ] 10-01: Loading & Error Handling (skeleton components + error boundary + route loading)
+- [ ] 10-02: Deployment Configuration (Vercel config + env validation + global handlers)
 
 ## Progress
 
