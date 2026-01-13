@@ -270,3 +270,49 @@ export interface CAPIConfig {
 export interface CAPIConfigWithBrand extends CAPIConfig {
   brand: Brand;
 }
+
+// API Usage types
+export type APIProvider = 'google_ai' | 'openweathermap';
+export type APIStatus = 'success' | 'error' | 'timeout';
+
+export interface APIUsage {
+  id: string;
+  api_provider: APIProvider;
+  api_endpoint: string;
+  model: string | null;
+  input_tokens: number;
+  output_tokens: number;
+  total_tokens: number;
+  estimated_cost_usd: number;
+  brand_id: string | null;
+  campaign_id: string | null;
+  user_id: string | null;
+  request_duration_ms: number | null;
+  status: APIStatus;
+  error_message: string | null;
+  created_at: string;
+}
+
+export interface APIUsageInsert {
+  api_provider?: APIProvider;
+  api_endpoint: string;
+  model?: string;
+  input_tokens?: number;
+  output_tokens?: number;
+  estimated_cost_usd?: number;
+  brand_id?: string;
+  campaign_id?: string;
+  user_id?: string;
+  request_duration_ms?: number;
+  status?: APIStatus;
+  error_message?: string;
+}
+
+export interface APIUsageStats {
+  total_requests: number;
+  total_tokens: number;
+  total_cost_usd: number;
+  by_provider: { provider: string; requests: number; tokens: number; cost: number }[];
+  by_endpoint: { endpoint: string; requests: number; tokens: number }[];
+  by_day: { date: string; requests: number; tokens: number }[];
+}
