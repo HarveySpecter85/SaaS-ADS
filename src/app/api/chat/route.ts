@@ -14,7 +14,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Build context from brand if provided
-    let context: ChatContext = {};
+    const context: ChatContext = {};
 
     if (brandId) {
       const supabase = await createClient();
