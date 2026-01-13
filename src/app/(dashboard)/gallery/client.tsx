@@ -4,6 +4,7 @@ import { useState, useMemo, useEffect, useCallback } from "react";
 import Link from "next/link";
 import type { Campaign, Asset, Prompt, CampaignGoal, AdPlatform, AssetFormat } from "@/lib/supabase/database.types";
 import { CampaignSection } from "@/components/campaign-section";
+import { ExportModal } from "@/components/export-modal";
 
 // Extended campaign type with product name and asset count
 interface CampaignWithAssetCount extends Campaign {
@@ -61,6 +62,12 @@ export function GalleryClient({ data }: GalleryClientProps) {
 
   // Lightbox state
   const [lightboxAsset, setLightboxAsset] = useState<Asset | null>(null);
+
+  // Export modal state
+  const [isExportModalOpen, setIsExportModalOpen] = useState(false);
+
+  // Toast notification state
+  const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
 
   // Create maps for quick lookups
   const assetsByCampaign = useMemo(() => {
@@ -223,6 +230,32 @@ export function GalleryClient({ data }: GalleryClientProps) {
   const clearSelection = () => {
     setSelectedAssetIds(new Set());
     setLastSelectedAssetId(null);
+  };
+
+  // Get selected assets for export
+  const selectedAssets = useMemo(() => {
+    return assets.filter((asset) => selectedAssetIds.has(asset.id));
+  }, [assets, selectedAssetIds]);
+
+  // Open export modal
+  const openExportModal = () => {
+    setIsExportModalOpen(true);
+  };
+
+  // Close export modal
+  const closeExportModal = () => {
+    setIsExportModalOpen(false);
+  };
+
+  // Handle export completion
+  const handleExportComplete = (message: string) => {
+    closeExportModal();
+    // Show success toast
+    setToast({ message, type: "success" });
+    // Optionally clear selection after export
+    clearSelection();
+    // Auto-dismiss toast after 5 seconds
+    setTimeout(() => setToast(null), 5000);
   };
 
   // Get assets in the same campaign as the lightbox asset for navigation
@@ -497,10 +530,7 @@ export function GalleryClient({ data }: GalleryClientProps) {
             <div className="w-px h-5 bg-slate-700" />
             <button
               className="text-sm font-medium hover:text-blue-300 transition-colors"
-              onClick={() => {
-                // Export functionality will be added in Plan 03
-                alert("Export functionality coming in Plan 03");
-              }}
+              onClick={openExportModal}
             >
               Export
             </button>
@@ -696,6 +726,77 @@ export function GalleryClient({ data }: GalleryClientProps) {
                 </p>
               </div>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Export Modal */}
+      {isExportModalOpen && selectedAssets.length > 0 && (
+        <ExportModal
+          assets={selectedAssets}
+          onClose={closeExportModal}
+          onComplete={handleExportComplete}
+        />
+      )}
+
+      {/* Toast Notification */}
+      {toast && (
+        <div className="fixed bottom-6 right-6 z-50">
+          <div
+            className={`flex items-center gap-3 px-4 py-3 rounded-lg shadow-lg ${
+              toast.type === "success"
+                ? "bg-green-600 text-white"
+                : "bg-red-600 text-white"
+            }`}
+          >
+            {toast.type === "success" ? (
+              <svg
+                className="w-5 h-5 flex-shrink-0"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={2}
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M5 13l4 4L19 7"
+                />
+              </svg>
+            ) : (
+              <svg
+                className="w-5 h-5 flex-shrink-0"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={2}
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              </svg>
+            )}
+            <span className="text-sm font-medium">{toast.message}</span>
+            <button
+              onClick={() => setToast(null)}
+              className="ml-2 p-1 hover:bg-white/20 rounded transition-colors"
+            >
+              <svg
+                className="w-4 h-4"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={2}
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              </svg>
+            </button>
           </div>
         </div>
       )}
