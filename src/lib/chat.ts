@@ -14,6 +14,11 @@ export interface ChatContext {
   brandName?: string;
   brandTone?: string[];     // Tone descriptors from brand
   productNames?: string[];  // Available products for recommendations
+  products?: Array<{        // Full product details for recommendations
+    id: string;
+    name: string;
+    description: string | null;
+  }>;
 }
 
 // Build system prompt with context
@@ -26,7 +31,8 @@ Guidelines:
 - Ask clarifying questions to understand needs
 - Make specific product recommendations when you have enough information
 - Keep responses concise (2-3 sentences max unless explaining products)
-- Never make up product information - only recommend products from the catalog`;
+- Never make up product information - only recommend products from the catalog
+- When you recommend products, mention them by name so the system can show product cards`;
 
   if (context.brandName) {
     prompt += `\n\nYou represent ${context.brandName}.`;

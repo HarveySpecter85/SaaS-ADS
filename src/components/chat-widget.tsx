@@ -3,12 +3,25 @@
 import { useState, useCallback, useRef, useEffect, type KeyboardEvent } from "react";
 import { ChatBubble } from "./chat-bubble";
 import { ChatMessage } from "./chat-message";
+import { ProductRecommendations } from "./product-recommendation";
+
+// Delimiter for recommendations in stream
+const RECOMMENDATIONS_DELIMITER = '\n---RECOMMENDATIONS---\n';
+
+// Product recommendation type
+interface ProductRecommendation {
+  id: string;
+  name: string;
+  description: string | null;
+  imageUrl: string | null;
+}
 
 interface Message {
   id: string;
   role: 'user' | 'assistant';
   content: string;
   timestamp: Date;
+  recommendations?: ProductRecommendation[];
 }
 
 interface ChatWidgetProps {
@@ -115,18 +128,45 @@ export function ChatWidget({ brandId, initialMessage }: ChatWidgetProps) {
       const decoder = new TextDecoder();
 
       if (reader) {
+        let fullContent = '';
+
         while (true) {
           const { done, value } = await reader.read();
           if (done) break;
 
           const chunk = decoder.decode(value);
+          fullContent += chunk;
 
-          // Update the assistant message with new content
-          setMessages((prev) =>
-            prev.map((m) =>
-              m.id === assistantId ? { ...m, content: m.content + chunk } : m
-            )
-          );
+          // Check if we have recommendations delimiter
+          if (fullContent.includes(RECOMMENDATIONS_DELIMITER)) {
+            const [text, json] = fullContent.split(RECOMMENDATIONS_DELIMITER);
+
+            // Parse recommendations if we have valid JSON
+            let recommendations: ProductRecommendation[] = [];
+            if (json) {
+              try {
+                recommendations = JSON.parse(json);
+              } catch {
+                // Invalid JSON, ignore
+              }
+            }
+
+            // Update message with text content and recommendations
+            setMessages((prev) =>
+              prev.map((m) =>
+                m.id === assistantId
+                  ? { ...m, content: text, recommendations }
+                  : m
+              )
+            );
+          } else {
+            // Update the assistant message with new content
+            setMessages((prev) =>
+              prev.map((m) =>
+                m.id === assistantId ? { ...m, content: fullContent } : m
+              )
+            );
+          }
         }
       }
     } catch (error) {
@@ -197,12 +237,17 @@ export function ChatWidget({ brandId, initialMessage }: ChatWidgetProps) {
         {/* Messages Area */}
         <div className="flex-1 overflow-y-auto p-4 space-y-4">
           {messages.map((message) => (
-            <ChatMessage
-              key={message.id}
-              role={message.role}
-              content={message.content}
-              timestamp={message.timestamp}
-            />
+            <div key={message.id}>
+              <ChatMessage
+                role={message.role}
+                content={message.content}
+                timestamp={message.timestamp}
+              />
+              {/* Show product recommendations after assistant messages */}
+              {message.role === 'assistant' && message.recommendations && (
+                <ProductRecommendations products={message.recommendations} />
+              )}
+            </div>
           ))}
           {isLoading && (
             <ChatMessage role="assistant" content="" isLoading />
