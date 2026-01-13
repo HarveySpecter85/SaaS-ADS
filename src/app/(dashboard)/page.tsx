@@ -1,9 +1,4 @@
-import { createClient } from "@/lib/supabase/server";
-
-export default async function DashboardHome() {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-
+export default function DashboardHome() {
   return (
     <div className="space-y-8">
       {/* Welcome Header */}
