@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect, useCallback } from "react";
 import Link from "next/link";
-import type { Campaign, Asset, Prompt, CampaignGoal } from "@/lib/supabase/database.types";
+import type { Campaign, Asset, Prompt, CampaignGoal, AdPlatform, AssetFormat } from "@/lib/supabase/database.types";
 import { CampaignSection } from "@/components/campaign-section";
 
 // Extended campaign type with product name and asset count
@@ -29,6 +29,20 @@ const goalOptions: Array<{ value: CampaignGoal | "all"; label: string }> = [
   { value: "lead_gen", label: "Lead Gen" },
   { value: "conversion", label: "Conversion" },
 ];
+
+// Format badge colors for lightbox
+const formatColors: Record<AssetFormat, { bg: string; text: string }> = {
+  png: { bg: "bg-purple-100", text: "text-purple-700" },
+  jpg: { bg: "bg-amber-100", text: "text-amber-700" },
+  webp: { bg: "bg-teal-100", text: "text-teal-700" },
+};
+
+// Platform badge colors for lightbox
+const platformColors: Record<AdPlatform, { bg: string; text: string; label: string }> = {
+  google_ads: { bg: "bg-blue-100", text: "text-blue-700", label: "Google Ads" },
+  meta: { bg: "bg-indigo-100", text: "text-indigo-700", label: "Meta" },
+  tiktok: { bg: "bg-rose-100", text: "text-rose-700", label: "TikTok" },
+};
 
 export function GalleryClient({ data }: GalleryClientProps) {
   const { campaigns, products, assets, prompts } = data;
@@ -210,6 +224,83 @@ export function GalleryClient({ data }: GalleryClientProps) {
     setSelectedAssetIds(new Set());
     setLastSelectedAssetId(null);
   };
+
+  // Get assets in the same campaign as the lightbox asset for navigation
+  const getLightboxNavigationAssets = useCallback((): Asset[] => {
+    if (!lightboxAsset) return [];
+    return assetsByCampaign.get(lightboxAsset.campaign_id) || [];
+  }, [lightboxAsset, assetsByCampaign]);
+
+  // Navigate to previous/next asset in lightbox
+  const navigateLightbox = useCallback(
+    (direction: "prev" | "next") => {
+      if (!lightboxAsset) return;
+
+      const campaignAssets = getLightboxNavigationAssets();
+      const currentIndex = campaignAssets.findIndex(
+        (a) => a.id === lightboxAsset.id
+      );
+
+      if (currentIndex === -1) return;
+
+      let newIndex: number;
+      if (direction === "prev") {
+        newIndex = currentIndex > 0 ? currentIndex - 1 : campaignAssets.length - 1;
+      } else {
+        newIndex = currentIndex < campaignAssets.length - 1 ? currentIndex + 1 : 0;
+      }
+
+      setLightboxAsset(campaignAssets[newIndex]);
+    },
+    [lightboxAsset, getLightboxNavigationAssets]
+  );
+
+  // Close lightbox
+  const closeLightbox = useCallback(() => {
+    setLightboxAsset(null);
+  }, []);
+
+  // Keyboard navigation for lightbox
+  useEffect(() => {
+    if (!lightboxAsset) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      switch (e.key) {
+        case "Escape":
+          closeLightbox();
+          break;
+        case "ArrowLeft":
+          navigateLightbox("prev");
+          break;
+        case "ArrowRight":
+          navigateLightbox("next");
+          break;
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [lightboxAsset, navigateLightbox, closeLightbox]);
+
+  // Get prompt for current lightbox asset
+  const lightboxPrompt = lightboxAsset
+    ? promptsById.get(lightboxAsset.prompt_id)
+    : null;
+
+  // Get navigation info for lightbox
+  const lightboxNavInfo = useMemo(() => {
+    if (!lightboxAsset) return null;
+    const campaignAssets = assetsByCampaign.get(lightboxAsset.campaign_id) || [];
+    const currentIndex = campaignAssets.findIndex(
+      (a) => a.id === lightboxAsset.id
+    );
+    return {
+      current: currentIndex + 1,
+      total: campaignAssets.length,
+      hasPrev: campaignAssets.length > 1,
+      hasNext: campaignAssets.length > 1,
+    };
+  }, [lightboxAsset, assetsByCampaign]);
 
   // Empty state - no campaigns
   if (campaigns.length === 0) {
@@ -423,24 +514,40 @@ export function GalleryClient({ data }: GalleryClientProps) {
         </div>
       )}
 
-      {/* Lightbox placeholder - will be fully implemented in Task 3 */}
+      {/* Lightbox Modal with full metadata and navigation */}
       {lightboxAsset && (
         <div
-          className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-8"
-          onClick={() => setLightboxAsset(null)}
+          className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center"
+          onClick={closeLightbox}
         >
-          <div
-            className="relative max-w-4xl max-h-full"
-            onClick={(e) => e.stopPropagation()}
+          {/* Close button */}
+          <button
+            onClick={closeLightbox}
+            className="absolute top-4 right-4 z-10 p-2 bg-white/10 rounded-full text-white hover:bg-white/20 transition-colors"
           >
-            <img
-              src={lightboxAsset.image_url}
-              alt={`Asset ${lightboxAsset.id}`}
-              className="max-w-full max-h-[80vh] object-contain rounded-lg"
-            />
+            <svg
+              className="w-6 h-6"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth={2}
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M6 18L18 6M6 6l12 12"
+              />
+            </svg>
+          </button>
+
+          {/* Navigation arrows */}
+          {lightboxNavInfo && lightboxNavInfo.hasPrev && (
             <button
-              onClick={() => setLightboxAsset(null)}
-              className="absolute top-4 right-4 p-2 bg-black/50 rounded-full text-white hover:bg-black/70 transition-colors"
+              onClick={(e) => {
+                e.stopPropagation();
+                navigateLightbox("prev");
+              }}
+              className="absolute left-4 top-1/2 -translate-y-1/2 z-10 p-3 bg-white/10 rounded-full text-white hover:bg-white/20 transition-colors"
             >
               <svg
                 className="w-6 h-6"
@@ -452,10 +559,143 @@ export function GalleryClient({ data }: GalleryClientProps) {
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
-                  d="M6 18L18 6M6 6l12 12"
+                  d="M15.75 19.5L8.25 12l7.5-7.5"
                 />
               </svg>
             </button>
+          )}
+
+          {lightboxNavInfo && lightboxNavInfo.hasNext && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                navigateLightbox("next");
+              }}
+              className="absolute right-4 top-1/2 -translate-y-1/2 z-10 p-3 bg-white/10 rounded-full text-white hover:bg-white/20 transition-colors"
+            >
+              <svg
+                className="w-6 h-6"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={2}
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M8.25 4.5l7.5 7.5-7.5 7.5"
+                />
+              </svg>
+            </button>
+          )}
+
+          {/* Main content area */}
+          <div
+            className="flex flex-col lg:flex-row items-center gap-6 max-w-6xl max-h-[90vh] p-6"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Image */}
+            <div className="flex-1 flex items-center justify-center min-w-0">
+              <img
+                src={lightboxAsset.image_url}
+                alt={`Asset ${lightboxAsset.id}`}
+                className="max-w-full max-h-[70vh] object-contain rounded-lg shadow-2xl"
+              />
+            </div>
+
+            {/* Metadata panel */}
+            <div className="lg:w-80 w-full bg-white rounded-xl p-5 shadow-xl max-h-[70vh] overflow-y-auto">
+              {/* Navigation counter */}
+              {lightboxNavInfo && (
+                <p className="text-xs text-slate-400 mb-3">
+                  {lightboxNavInfo.current} of {lightboxNavInfo.total} in this campaign
+                </p>
+              )}
+
+              {/* Dimensions */}
+              <div className="mb-4">
+                <h4 className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1">
+                  Dimensions
+                </h4>
+                <p className="text-lg font-semibold text-slate-900">
+                  {lightboxAsset.width} x {lightboxAsset.height}
+                </p>
+              </div>
+
+              {/* Format and Platform badges */}
+              <div className="flex items-center gap-2 mb-4">
+                <span
+                  className={`inline-flex items-center px-2.5 py-0.5 rounded text-xs font-medium ${
+                    formatColors[lightboxAsset.format].bg
+                  } ${formatColors[lightboxAsset.format].text}`}
+                >
+                  {lightboxAsset.format.toUpperCase()}
+                </span>
+                {lightboxAsset.platform && (
+                  <span
+                    className={`inline-flex items-center px-2.5 py-0.5 rounded text-xs font-medium ${
+                      platformColors[lightboxAsset.platform].bg
+                    } ${platformColors[lightboxAsset.platform].text}`}
+                  >
+                    {platformColors[lightboxAsset.platform].label}
+                  </span>
+                )}
+              </div>
+
+              {/* Prompt info */}
+              {lightboxPrompt && (
+                <>
+                  {lightboxPrompt.headline && (
+                    <div className="mb-4">
+                      <h4 className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1">
+                        Headline
+                      </h4>
+                      <p className="text-sm text-slate-900 font-medium">
+                        {lightboxPrompt.headline}
+                      </p>
+                    </div>
+                  )}
+
+                  {lightboxPrompt.description && (
+                    <div className="mb-4">
+                      <h4 className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1">
+                        Description
+                      </h4>
+                      <p className="text-sm text-slate-700">
+                        {lightboxPrompt.description}
+                      </p>
+                    </div>
+                  )}
+
+                  {lightboxPrompt.cta && (
+                    <div className="mb-4">
+                      <h4 className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1">
+                        Call to Action
+                      </h4>
+                      <p className="text-sm text-slate-700">{lightboxPrompt.cta}</p>
+                    </div>
+                  )}
+
+                  {lightboxPrompt.variation_type && (
+                    <div className="mb-4">
+                      <h4 className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1">
+                        Variation Type
+                      </h4>
+                      <p className="text-sm text-slate-700 capitalize">
+                        {lightboxPrompt.variation_type}
+                      </p>
+                    </div>
+                  )}
+                </>
+              )}
+
+              {/* Keyboard shortcuts hint */}
+              <div className="mt-6 pt-4 border-t border-slate-100">
+                <p className="text-xs text-slate-400">
+                  Use arrow keys to navigate, Escape to close
+                </p>
+              </div>
+            </div>
           </div>
         </div>
       )}
