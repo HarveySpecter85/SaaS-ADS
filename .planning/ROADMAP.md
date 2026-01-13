@@ -17,7 +17,7 @@ None
 Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] **Phase 1: Foundation** - Next.js + Supabase setup, auth, base layout
-- [ ] **Phase 2: Brand Ingestion** - PDF parsing for brand guidelines, hex/font/tone extraction
+- [x] **Phase 2: Brand Ingestion** - PDF parsing for brand guidelines, hex/font/tone extraction
 - [ ] **Phase 3: Asset Anchoring** - Product image upload, geometry "lock" system
 - [ ] **Phase 4: Prompt Generation** - Persona-based prompt sets, 50+ variations per set
 - [ ] **Phase 5: Asset Gallery** - Generated asset management, filters, search, export
@@ -47,9 +47,9 @@ Plans:
 **Plans**: 3 plans
 
 Plans:
-- [ ] 02-01: Brand Data Foundation (database types + CRUD API)
-- [ ] 02-02: PDF Extraction (Gemini integration + upload endpoint)
-- [ ] 02-03: Brand UI (list page + profile page with visual swatches)
+- [x] 02-01: Brand Data Foundation (database types + CRUD API)
+- [x] 02-02: PDF Extraction (Gemini integration + upload endpoint)
+- [x] 02-03: Brand UI (list page + profile page with visual swatches)
 
 ### Phase 3: Asset Anchoring
 **Goal**: Upload "Source of Truth" product images and create geometry "anchors" to prevent hallucinations
@@ -112,7 +112,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 →
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Foundation | 3/3 | Complete | 2026-01-13 |
-| 2. Brand Ingestion | 0/3 | In progress | - |
+| 2. Brand Ingestion | 3/3 | Complete | 2026-01-13 |
 | 3. Asset Anchoring | 0/TBD | Not started | - |
 | 4. Prompt Generation | 0/TBD | Not started | - |
 | 5. Asset Gallery | 0/TBD | Not started | - |
