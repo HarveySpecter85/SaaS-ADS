@@ -40,3 +40,27 @@ export interface BrandWithRelations extends Brand {
   fonts: BrandFont[];
   tone: BrandTone[];
 }
+
+export interface Product {
+  id: string;
+  brand_id: string;
+  name: string;
+  description: string | null;
+  sku: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ProductImage {
+  id: string;
+  product_id: string;
+  image_url: string;
+  is_hero: boolean;
+  angle: string | null;
+  sort_order: number;
+  created_at: string;
+}
+
+export interface ProductWithImages extends Product {
+  images: ProductImage[];
+}
