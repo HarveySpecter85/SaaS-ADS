@@ -247,3 +247,26 @@ export interface ConversionEventInsert {
   brand_id?: string;
   event_time?: string;
 }
+
+// CAPI Configuration types
+export interface CAPIConfig {
+  id: string;
+  brand_id: string;
+  customer_id: string;
+  conversion_action_id: string;
+  access_token: string | null;
+  refresh_token: string | null;
+  token_expires_at: string | null;
+  is_active: boolean;
+  batch_size: number;
+  sync_interval_minutes: number;
+  last_sync_at: string | null;
+  last_sync_status: string | null;
+  last_sync_count: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CAPIConfigWithBrand extends CAPIConfig {
+  brand: Brand;
+}
