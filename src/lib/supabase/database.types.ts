@@ -198,3 +198,52 @@ export interface TriggerEvaluation {
   current_value: unknown;
   recommended_campaigns?: Campaign[];
 }
+
+// Conversion event types
+export type ConversionEventName = 'purchase' | 'lead' | 'signup' | 'add_to_cart' | 'page_view' | 'custom';
+export type ConversionSyncStatus = 'pending' | 'queued' | 'sent' | 'failed' | 'skipped';
+
+export interface ConversionEvent {
+  id: string;
+  event_name: ConversionEventName;
+  event_id: string | null;
+  user_email_hash: string | null;
+  user_phone_hash: string | null;
+  user_first_name_hash: string | null;
+  user_last_name_hash: string | null;
+  user_ip: string | null;
+  user_agent: string | null;
+  event_value: number | null;
+  currency: string;
+  transaction_id: string | null;
+  custom_params: Record<string, unknown>;
+  source: string | null;
+  campaign_id: string | null;
+  brand_id: string | null;
+  sync_status: ConversionSyncStatus;
+  sync_attempts: number;
+  synced_at: string | null;
+  sync_error: string | null;
+  event_time: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ConversionEventInsert {
+  event_name: ConversionEventName;
+  event_id?: string;
+  user_email?: string;      // Will be hashed before storage
+  user_phone?: string;      // Will be hashed before storage
+  user_first_name?: string; // Will be hashed before storage
+  user_last_name?: string;  // Will be hashed before storage
+  user_ip?: string;
+  user_agent?: string;
+  event_value?: number;
+  currency?: string;
+  transaction_id?: string;
+  custom_params?: Record<string, unknown>;
+  source?: string;
+  campaign_id?: string;
+  brand_id?: string;
+  event_time?: string;
+}
