@@ -121,3 +121,50 @@ export interface CampaignWithAssets extends Campaign {
   prompts: Prompt[];
   assets: Asset[];
 }
+
+// Data source types
+export type DataSourceType = 'weather' | 'calendar' | 'custom';
+
+export interface WeatherConfig {
+  api_key?: string;
+  location: string;
+  units: 'metric' | 'imperial';
+}
+
+export interface CalendarConfig {
+  events: Array<{
+    name: string;
+    date: string;
+    type: 'holiday' | 'event' | 'sale';
+  }>;
+}
+
+export interface CustomConfig {
+  data: Record<string, unknown>;
+}
+
+export type DataSourceConfig = WeatherConfig | CalendarConfig | CustomConfig;
+
+export interface DataSource {
+  id: string;
+  name: string;
+  type: DataSourceType;
+  config: DataSourceConfig;
+  is_active: boolean;
+  last_sync_at: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface DataSourceValue {
+  id: string;
+  data_source_id: string;
+  key: string;
+  value: unknown;
+  expires_at: string | null;
+  created_at: string;
+}
+
+export interface DataSourceWithValues extends DataSource {
+  values: DataSourceValue[];
+}
