@@ -43,9 +43,13 @@ Plans:
 ### Phase 2: Brand Ingestion
 **Goal**: Upload and parse brand guidelines PDFs to extract hex codes, fonts, tone of voice
 **Depends on**: Phase 1
-**Research**: Likely (PDF parsing approach)
-**Research topics**: PDF parsing libraries (pdf-parse, pdf.js), Gemini for structured extraction
-**Plans**: TBD
+**Research**: Completed (pdf-parse + Gemini approach)
+**Plans**: 3 plans
+
+Plans:
+- [ ] 02-01: Brand Data Foundation (database types + CRUD API)
+- [ ] 02-02: PDF Extraction (Gemini integration + upload endpoint)
+- [ ] 02-03: Brand UI (list page + profile page with visual swatches)
 
 ### Phase 3: Asset Anchoring
 **Goal**: Upload "Source of Truth" product images and create geometry "anchors" to prevent hallucinations
@@ -108,7 +112,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 →
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Foundation | 3/3 | Complete | 2026-01-13 |
-| 2. Brand Ingestion | 0/TBD | Not started | - |
+| 2. Brand Ingestion | 0/3 | In progress | - |
 | 3. Asset Anchoring | 0/TBD | Not started | - |
 | 4. Prompt Generation | 0/TBD | Not started | - |
 | 5. Asset Gallery | 0/TBD | Not started | - |
