@@ -74,7 +74,7 @@ export function ChatWidget({ brandId, initialMessage }: ChatWidgetProps) {
 
     // Add user message
     const userMessage: Message = {
-      id: `user-${Date.now()}`,
+      id: crypto.randomUUID(),
       role: "user",
       content: trimmedValue,
       timestamp: new Date(),
@@ -84,18 +84,68 @@ export function ChatWidget({ brandId, initialMessage }: ChatWidgetProps) {
     setInputValue("");
     setIsLoading(true);
 
-    // Simulate response (UI-only for now - Gemini integration comes in Plan 02)
-    setTimeout(() => {
-      const assistantMessage: Message = {
-        id: `assistant-${Date.now()}`,
+    // Create placeholder for assistant response
+    const assistantId = crypto.randomUUID();
+    setMessages((prev) => [
+      ...prev,
+      {
+        id: assistantId,
         role: "assistant",
-        content: "Thanks for your message! I'm currently in demo mode. Full AI-powered responses will be available soon. In the meantime, feel free to explore the chat interface.",
+        content: "",
         timestamp: new Date(),
-      };
-      setMessages((prev) => [...prev, assistantMessage]);
+      },
+    ]);
+
+    try {
+      const response = await fetch("/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          messages: [...messages, userMessage].map((m) => ({
+            role: m.role,
+            content: m.content,
+          })),
+          brandId,
+        }),
+      });
+
+      if (!response.ok) throw new Error("Chat request failed");
+
+      const reader = response.body?.getReader();
+      const decoder = new TextDecoder();
+
+      if (reader) {
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+
+          const chunk = decoder.decode(value);
+
+          // Update the assistant message with new content
+          setMessages((prev) =>
+            prev.map((m) =>
+              m.id === assistantId ? { ...m, content: m.content + chunk } : m
+            )
+          );
+        }
+      }
+    } catch (error) {
+      console.error("Chat error:", error);
+      // Update assistant message with error
+      setMessages((prev) =>
+        prev.map((m) =>
+          m.id === assistantId
+            ? {
+                ...m,
+                content: "Sorry, I encountered an error. Please try again.",
+              }
+            : m
+        )
+      );
+    } finally {
       setIsLoading(false);
-    }, 1500);
-  }, [inputValue, isLoading]);
+    }
+  }, [inputValue, isLoading, messages, brandId]);
 
   const handleKeyDown = useCallback(
     (e: KeyboardEvent<HTMLTextAreaElement>) => {
