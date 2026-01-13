@@ -20,7 +20,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 2: Brand Ingestion** - PDF parsing for brand guidelines, hex/font/tone extraction
 - [x] **Phase 3: Asset Anchoring** - Product image upload, geometry "lock" system
 - [x] **Phase 4: Prompt Generation** - Persona-based prompt sets, 50+ variations per set
-- [ ] **Phase 5: Asset Gallery** - Generated asset management, filters, search, export
+- [x] **Phase 5: Asset Gallery** - Generated asset management, filters, search, export
 - [ ] **Phase 6: External Data** - CRM, weather, stock data connections
 - [ ] **Phase 7: Conversational Ads** - Embedded chat UI, FAQ automation
 - [ ] **Phase 8: Server-Side Tracking** - CAPI implementation, Enhanced Conversions
@@ -74,8 +74,13 @@ Plans:
 ### Phase 5: Asset Gallery
 **Goal**: Gallery view for generated assets with filters, search, and campaign export packages
 **Depends on**: Phase 4
-**Research**: Unlikely (internal UI with established patterns)
-**Plans**: TBD
+**Research**: Not needed (established patterns)
+**Plans**: 3 plans
+
+Plans:
+- [x] 05-01: Asset Gallery Foundation (asset data types + API routes)
+- [x] 05-02: Gallery UI (grid layout + filtering + selection + lightbox)
+- [x] 05-03: Export Workflow (platform bundles + ZIP generation)
 
 ### Phase 6: External Data
 **Goal**: Connect to CRM, weather APIs, and stock data for real-time bidding context
@@ -121,7 +126,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 →
 | 2. Brand Ingestion | 3/3 | Complete | 2026-01-13 |
 | 3. Asset Anchoring | 2/2 | Complete | 2026-01-13 |
 | 4. Prompt Generation | 2/2 | Complete | 2026-01-13 |
-| 5. Asset Gallery | 0/TBD | Not started | - |
+| 5. Asset Gallery | 3/3 | Complete | 2026-01-13 |
 | 6. External Data | 0/TBD | Not started | - |
 | 7. Conversational Ads | 0/TBD | Not started | - |
 | 8. Server-Side Tracking | 0/TBD | Not started | - |
