@@ -1,0 +1,68 @@
+@import "tailwindcss";
+
+/* Linear-style color palette using slate/gray tones */
+@theme inline {
+  /* Base colors */
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+
+  /* Fonts */
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+:root {
+  /* Light mode - clean slate tones */
+  --background: #fafafa;
+  --foreground: #0f172a;
+
+  /* Accent colors */
+  --primary: #3b82f6;
+  --primary-foreground: #ffffff;
+
+  /* Muted tones */
+  --muted: #f1f5f9;
+  --muted-foreground: #64748b;
+
+  /* Border colors */
+  --border: #e2e8f0;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    /* Dark mode - Linear-style dark aesthetic */
+    --background: #0a0a0a;
+    --foreground: #f8fafc;
+
+    /* Accent colors */
+    --primary: #60a5fa;
+    --primary-foreground: #0f172a;
+
+    /* Muted tones */
+    --muted: #1e293b;
+    --muted-foreground: #94a3b8;
+
+    /* Border colors */
+    --border: #1e293b;
+  }
+}
+
+/* Base styles */
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans), system-ui, -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Clean defaults */
+* {
+  border-color: var(--border);
+}
+
+/* Focus styles */
+*:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
