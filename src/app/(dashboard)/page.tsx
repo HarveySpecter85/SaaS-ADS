@@ -1,114 +1,236 @@
-export default function DashboardHome() {
+import { createClient } from '@/lib/supabase/server';
+import Link from 'next/link';
+import { getUsageStats } from '@/lib/api-usage';
+
+async function getMetrics() {
+  const supabase = await createClient();
+
+  const [
+    { count: brandCount },
+    { count: campaignCount },
+    { count: assetCount },
+    { count: promptCount },
+    { data: recentBrands },
+    { data: recentCampaigns },
+    { data: conversions },
+    usageStats,
+  ] = await Promise.all([
+    supabase.from('brands').select('*', { count: 'exact', head: true }),
+    supabase.from('campaigns').select('*', { count: 'exact', head: true }),
+    supabase.from('assets').select('*', { count: 'exact', head: true }),
+    supabase.from('prompts').select('*', { count: 'exact', head: true }),
+    supabase.from('brands').select('id, name, created_at').order('created_at', { ascending: false }).limit(5),
+    supabase.from('campaigns').select('id, name, status, created_at').order('created_at', { ascending: false }).limit(5),
+    supabase.from('conversion_events').select('sync_status'),
+    getUsageStats(30),
+  ]);
+
+  const pendingConversions = conversions?.filter(c => c.sync_status === 'pending').length || 0;
+  const sentConversions = conversions?.filter(c => c.sync_status === 'sent').length || 0;
+
+  return {
+    brandCount: brandCount || 0,
+    campaignCount: campaignCount || 0,
+    assetCount: assetCount || 0,
+    promptCount: promptCount || 0,
+    recentBrands: recentBrands || [],
+    recentCampaigns: recentCampaigns || [],
+    pendingConversions,
+    sentConversions,
+    totalConversions: conversions?.length || 0,
+    usageStats,
+  };
+}
+
+export default async function DashboardHome() {
+  const metrics = await getMetrics();
+
   return (
     <div className="space-y-8">
-      {/* Welcome Header */}
+      {/* Header */}
       <div>
-        <h1 className="text-2xl font-semibold text-slate-900">
-          Welcome to AdOrchestrator
-        </h1>
-        <p className="mt-2 text-slate-600">
-          Your autonomous ad orchestration platform for scaling creative production.
-        </p>
+        <h1 className="text-2xl font-semibold text-slate-900">Dashboard</h1>
+        <p className="mt-1 text-slate-600">Overview of your ad orchestration platform.</p>
       </div>
 
-      {/* Module Overview Cards */}
-      <div className="grid gap-6 md:grid-cols-2">
-        {/* Nano Banana */}
-        <div className="rounded-lg border border-slate-200 bg-slate-50 p-6">
-          <div className="flex items-center gap-3 mb-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-amber-100">
-              <svg className="w-5 h-5 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z" />
-              </svg>
-            </div>
-            <h2 className="text-lg font-medium text-slate-900">Nano Banana</h2>
+      {/* Key Metrics */}
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <MetricCard
+          title="Brands"
+          value={metrics.brandCount}
+          href="/brands"
+          icon={
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 21h19.5m-18-18v18m10.5-18v18m6-13.5V21M6.75 6.75h.75m-.75 3h.75m-.75 3h.75m3-6h.75m-.75 3h.75m-.75 3h.75M6.75 21v-3.375c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21M3 3h12m-.75 4.5H21m-3.75 3H21m-3.75 3H21" />
+            </svg>
+          }
+          color="blue"
+        />
+        <MetricCard
+          title="Campaigns"
+          value={metrics.campaignCount}
+          href="/campaigns"
+          icon={
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6z" />
+            </svg>
+          }
+          color="purple"
+        />
+        <MetricCard
+          title="Assets"
+          value={metrics.assetCount}
+          href="/gallery"
+          icon={
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
+            </svg>
+          }
+          color="amber"
+        />
+        <MetricCard
+          title="Prompts"
+          value={metrics.promptCount}
+          href="/campaigns"
+          icon={
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21l2.755-4.133a1.14 1.14 0 01.865-.501 48.172 48.172 0 003.423-.379c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z" />
+            </svg>
+          }
+          color="green"
+        />
+      </div>
+
+      {/* Secondary Metrics */}
+      <div className="grid gap-4 sm:grid-cols-3">
+        <div className="rounded-lg border border-slate-200 bg-white p-5">
+          <div className="flex items-center justify-between">
+            <h3 className="text-sm font-medium text-slate-600">Conversions</h3>
+            <Link href="/conversions" className="text-xs text-blue-600 hover:underline">View all</Link>
           </div>
-          <p className="text-sm text-slate-600 mb-4">
-            Asset Factory powered by Few-Shot Context. Generate 500+ creative variations
-            per campaign while maintaining brand consistency.
-          </p>
-          <ul className="text-sm text-slate-500 space-y-1">
-            <li>Brand guidelines ingestion</li>
-            <li>Product image anchoring</li>
-            <li>Persona-based prompt sets</li>
-          </ul>
+          <p className="mt-2 text-2xl font-semibold text-slate-900">{metrics.totalConversions}</p>
+          <div className="mt-2 flex gap-4 text-xs">
+            <span className="text-amber-600">{metrics.pendingConversions} pending</span>
+            <span className="text-green-600">{metrics.sentConversions} sent</span>
+          </div>
         </div>
 
-        {/* Gemini Core */}
-        <div className="rounded-lg border border-slate-200 bg-slate-50 p-6">
-          <div className="flex items-center gap-3 mb-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-purple-100">
-              <svg className="w-5 h-5 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 3v1.5M4.5 8.25H3m18 0h-1.5M4.5 12H3m18 0h-1.5m-15 3.75H3m18 0h-1.5M8.25 19.5V21M12 3v1.5m0 15V21m3.75-18v1.5m0 15V21m-9-1.5h10.5a2.25 2.25 0 002.25-2.25V6.75a2.25 2.25 0 00-2.25-2.25H6.75A2.25 2.25 0 004.5 6.75v10.5a2.25 2.25 0 002.25 2.25z" />
-              </svg>
-            </div>
-            <h2 className="text-lg font-medium text-slate-900">Gemini Core</h2>
+        <div className="rounded-lg border border-slate-200 bg-white p-5">
+          <div className="flex items-center justify-between">
+            <h3 className="text-sm font-medium text-slate-600">API Usage (30d)</h3>
           </div>
-          <p className="text-sm text-slate-600 mb-4">
-            Strategic Brain for real-time campaign optimization. Connect external data
-            sources and enable conversational ad experiences.
-          </p>
-          <ul className="text-sm text-slate-500 space-y-1">
-            <li>CRM & external data integration</li>
-            <li>Conversational ads interface</li>
-            <li>Smart bidding context</li>
-          </ul>
+          <p className="mt-2 text-2xl font-semibold text-slate-900">{metrics.usageStats.total_requests.toLocaleString()}</p>
+          <div className="mt-2 flex gap-4 text-xs">
+            <span className="text-slate-500">{(metrics.usageStats.total_tokens / 1000).toFixed(1)}K tokens</span>
+            <span className="text-slate-500">${metrics.usageStats.total_cost_usd.toFixed(2)} est.</span>
+          </div>
         </div>
 
-        {/* Tracking */}
-        <div className="rounded-lg border border-slate-200 bg-slate-50 p-6">
-          <div className="flex items-center gap-3 mb-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-green-100">
-              <svg className="w-5 h-5 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z" />
-              </svg>
-            </div>
-            <h2 className="text-lg font-medium text-slate-900">Tracking</h2>
+        <div className="rounded-lg border border-slate-200 bg-white p-5">
+          <div className="flex items-center justify-between">
+            <h3 className="text-sm font-medium text-slate-600">Quick Actions</h3>
           </div>
-          <p className="text-sm text-slate-600 mb-4">
-            Privacy Shield for the cookieless future. Server-side tracking and
-            first-party data pipeline for accurate attribution.
-          </p>
-          <ul className="text-sm text-slate-500 space-y-1">
-            <li>Server-side CAPI implementation</li>
-            <li>Enhanced Conversions</li>
-            <li>First-party data pipeline</li>
-          </ul>
-        </div>
-
-        {/* Campaigns */}
-        <div className="rounded-lg border border-slate-200 bg-slate-50 p-6">
-          <div className="flex items-center gap-3 mb-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-100">
-              <svg className="w-5 h-5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6z" />
-              </svg>
-            </div>
-            <h2 className="text-lg font-medium text-slate-900">Campaigns</h2>
+          <div className="mt-3 flex flex-col gap-2">
+            <Link href="/brands/new" className="text-sm text-blue-600 hover:underline">+ New Brand</Link>
+            <Link href="/campaigns/new" className="text-sm text-blue-600 hover:underline">+ New Campaign</Link>
           </div>
-          <p className="text-sm text-slate-600 mb-4">
-            Dashboard for managing client campaigns, creative history, and
-            API usage metrics across your agency.
-          </p>
-          <ul className="text-sm text-slate-500 space-y-1">
-            <li>Multi-client management</li>
-            <li>Creative asset history</li>
-            <li>Performance metrics</li>
-          </ul>
         </div>
       </div>
 
-      {/* Getting Started */}
-      <div className="rounded-lg border border-blue-200 bg-blue-50 p-6">
-        <h2 className="text-lg font-medium text-blue-900 mb-2">
-          Getting Started
-        </h2>
-        <p className="text-sm text-blue-700">
-          Begin by uploading brand guidelines in Nano Banana to establish your creative
-          foundation. Once your brand assets are configured, you can start generating
-          persona-based creative variations at scale.
-        </p>
+      {/* Recent Activity */}
+      <div className="grid gap-6 lg:grid-cols-2">
+        {/* Recent Brands */}
+        <div className="rounded-lg border border-slate-200 bg-white">
+          <div className="border-b border-slate-200 px-5 py-4 flex items-center justify-between">
+            <h3 className="font-medium text-slate-900">Recent Brands</h3>
+            <Link href="/brands" className="text-sm text-blue-600 hover:underline">View all</Link>
+          </div>
+          <div className="divide-y divide-slate-100">
+            {metrics.recentBrands.length === 0 ? (
+              <p className="px-5 py-4 text-sm text-slate-500">No brands yet. <Link href="/brands/new" className="text-blue-600 hover:underline">Create one</Link></p>
+            ) : (
+              metrics.recentBrands.map((brand) => (
+                <Link key={brand.id} href={`/brands/${brand.id}`} className="block px-5 py-3 hover:bg-slate-50">
+                  <p className="text-sm font-medium text-slate-900">{brand.name}</p>
+                  <p className="text-xs text-slate-500">{new Date(brand.created_at).toLocaleDateString()}</p>
+                </Link>
+              ))
+            )}
+          </div>
+        </div>
+
+        {/* Recent Campaigns */}
+        <div className="rounded-lg border border-slate-200 bg-white">
+          <div className="border-b border-slate-200 px-5 py-4 flex items-center justify-between">
+            <h3 className="font-medium text-slate-900">Recent Campaigns</h3>
+            <Link href="/campaigns" className="text-sm text-blue-600 hover:underline">View all</Link>
+          </div>
+          <div className="divide-y divide-slate-100">
+            {metrics.recentCampaigns.length === 0 ? (
+              <p className="px-5 py-4 text-sm text-slate-500">No campaigns yet. <Link href="/campaigns/new" className="text-blue-600 hover:underline">Create one</Link></p>
+            ) : (
+              metrics.recentCampaigns.map((campaign) => (
+                <Link key={campaign.id} href={`/campaigns/${campaign.id}`} className="block px-5 py-3 hover:bg-slate-50">
+                  <div className="flex items-center justify-between">
+                    <p className="text-sm font-medium text-slate-900">{campaign.name}</p>
+                    <StatusBadge status={campaign.status} />
+                  </div>
+                  <p className="text-xs text-slate-500">{new Date(campaign.created_at).toLocaleDateString()}</p>
+                </Link>
+              ))
+            )}
+          </div>
+        </div>
       </div>
     </div>
+  );
+}
+
+function MetricCard({
+  title,
+  value,
+  href,
+  icon,
+  color,
+}: {
+  title: string;
+  value: number;
+  href: string;
+  icon: React.ReactNode;
+  color: 'blue' | 'purple' | 'amber' | 'green';
+}) {
+  const colorClasses = {
+    blue: 'bg-blue-100 text-blue-600',
+    purple: 'bg-purple-100 text-purple-600',
+    amber: 'bg-amber-100 text-amber-600',
+    green: 'bg-green-100 text-green-600',
+  };
+
+  return (
+    <Link href={href} className="rounded-lg border border-slate-200 bg-white p-5 hover:border-slate-300 transition-colors">
+      <div className="flex items-center gap-3">
+        <div className={`flex h-10 w-10 items-center justify-center rounded-lg ${colorClasses[color]}`}>
+          {icon}
+        </div>
+        <div>
+          <p className="text-sm text-slate-600">{title}</p>
+          <p className="text-2xl font-semibold text-slate-900">{value}</p>
+        </div>
+      </div>
+    </Link>
+  );
+}
+
+function StatusBadge({ status }: { status: string }) {
+  const classes = {
+    draft: 'bg-slate-100 text-slate-600',
+    generating: 'bg-amber-100 text-amber-700',
+    complete: 'bg-green-100 text-green-700',
+  }[status] || 'bg-slate-100 text-slate-600';
+
+  return (
+    <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${classes}`}>
+      {status}
+    </span>
   );
 }
