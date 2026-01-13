@@ -168,3 +168,33 @@ export interface DataSourceValue {
 export interface DataSourceWithValues extends DataSource {
   values: DataSourceValue[];
 }
+
+// Trigger rule types
+export type ConditionOperator = 'eq' | 'neq' | 'gt' | 'gte' | 'lt' | 'lte' | 'contains' | 'not_contains';
+export type TriggerActionType = 'recommend_goal' | 'recommend_tag' | 'show_message';
+
+export interface TriggerRule {
+  id: string;
+  name: string;
+  data_source_id: string;
+  condition_key: string;
+  condition_operator: ConditionOperator;
+  condition_value: string;
+  action_type: TriggerActionType;
+  action_value: string;
+  is_active: boolean;
+  priority: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface TriggerRuleWithSource extends TriggerRule {
+  data_source: DataSource;
+}
+
+export interface TriggerEvaluation {
+  rule: TriggerRule;
+  triggered: boolean;
+  current_value: unknown;
+  recommended_campaigns?: Campaign[];
+}
