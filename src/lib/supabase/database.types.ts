@@ -64,3 +64,33 @@ export interface ProductImage {
 export interface ProductWithImages extends Product {
   images: ProductImage[];
 }
+
+// Campaign types
+export type CampaignGoal = 'awareness' | 'lead_gen' | 'conversion';
+export type CampaignStatus = 'draft' | 'generating' | 'complete';
+
+export interface Campaign {
+  id: string;
+  product_id: string;
+  name: string;
+  goal: CampaignGoal;
+  status: CampaignStatus;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface Prompt {
+  id: string;
+  campaign_id: string;
+  prompt_text: string;
+  headline: string | null;
+  description: string | null;
+  cta: string | null;
+  variation_type: string | null;
+  is_preview: boolean;
+  created_at: string;
+}
+
+export interface CampaignWithPrompts extends Campaign {
+  prompts: Prompt[];
+}
