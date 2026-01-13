@@ -21,7 +21,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 3: Asset Anchoring** - Product image upload, geometry "lock" system
 - [x] **Phase 4: Prompt Generation** - Persona-based prompt sets, 50+ variations per set
 - [x] **Phase 5: Asset Gallery** - Generated asset management, filters, search, export
-- [ ] **Phase 6: External Data** - CRM, weather, stock data connections
+- [x] **Phase 6: External Data** - Weather integration, data sources, trigger rules
 - [ ] **Phase 7: Conversational Ads** - Embedded chat UI, FAQ automation
 - [ ] **Phase 8: Server-Side Tracking** - CAPI implementation, Enhanced Conversions
 - [ ] **Phase 9: Campaign Dashboard** - Client campaigns, metrics, multi-client management
@@ -83,11 +83,15 @@ Plans:
 - [x] 05-03: Export Workflow (platform bundles + ZIP generation)
 
 ### Phase 6: External Data
-**Goal**: Connect to CRM, weather APIs, and stock data for real-time bidding context
+**Goal**: Connect to weather APIs and external data sources for contextual creative triggers
 **Depends on**: Phase 1
-**Research**: Likely (external API integrations)
-**Research topics**: CRM APIs (HubSpot, Salesforce), weather APIs, stock data sources
-**Plans**: TBD
+**Research**: Completed (OpenWeatherMap API, data source architecture)
+**Plans**: 3 plans
+
+Plans:
+- [x] 06-01: Data Sources Foundation (database types + CRUD API)
+- [x] 06-02: Weather Integration (OpenWeatherMap API + sync endpoint + UI)
+- [x] 06-03: Trigger Rules Engine (conditions + evaluation + campaign recommendations)
 
 ### Phase 7: Conversational Ads
 **Goal**: Embedded chat UI for conversational ads, FAQ automation, inventory integration
@@ -127,7 +131,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 →
 | 3. Asset Anchoring | 2/2 | Complete | 2026-01-13 |
 | 4. Prompt Generation | 2/2 | Complete | 2026-01-13 |
 | 5. Asset Gallery | 3/3 | Complete | 2026-01-13 |
-| 6. External Data | 0/TBD | Not started | - |
+| 6. External Data | 3/3 | Complete | 2026-01-13 |
 | 7. Conversational Ads | 0/TBD | Not started | - |
 | 8. Server-Side Tracking | 0/TBD | Not started | - |
 | 9. Campaign Dashboard | 0/TBD | Not started | - |
