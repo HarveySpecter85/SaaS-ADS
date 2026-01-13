@@ -33,7 +33,12 @@ Decimal phases appear between their surrounding integers in numeric order.
 **Goal**: Project scaffolding with Next.js 14+ App Router, Supabase connection, team auth, and base layout
 **Depends on**: Nothing (first phase)
 **Research**: Unlikely (established Next.js + Supabase patterns)
-**Plans**: TBD
+**Plans**: 3 plans
+
+Plans:
+- [ ] 01-01: Project Setup (Next.js + Supabase + Tailwind)
+- [ ] 01-02: Team Auth (Supabase Auth + login + middleware)
+- [ ] 01-03: Layout Shell (Sidebar + dashboard home)
 
 ### Phase 2: Brand Ingestion
 **Goal**: Upload and parse brand guidelines PDFs to extract hex codes, fonts, tone of voice
@@ -102,7 +107,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 →
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Foundation | 0/TBD | Not started | - |
+| 1. Foundation | 0/3 | In progress | - |
 | 2. Brand Ingestion | 0/TBD | Not started | - |
 | 3. Asset Anchoring | 0/TBD | Not started | - |
 | 4. Prompt Generation | 0/TBD | Not started | - |
