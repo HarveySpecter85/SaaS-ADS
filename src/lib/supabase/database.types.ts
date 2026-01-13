@@ -94,3 +94,30 @@ export interface Prompt {
 export interface CampaignWithPrompts extends Campaign {
   prompts: Prompt[];
 }
+
+// Asset types
+export type AssetFormat = 'png' | 'jpg' | 'webp';
+export type AssetStatus = 'generating' | 'complete' | 'failed';
+export type AdPlatform = 'google_ads' | 'meta' | 'tiktok';
+
+export interface Asset {
+  id: string;
+  prompt_id: string;
+  campaign_id: string;
+  image_url: string;
+  width: number;
+  height: number;
+  format: AssetFormat;
+  platform: AdPlatform | null;
+  status: AssetStatus;
+  created_at: string;
+}
+
+export interface AssetWithPrompt extends Asset {
+  prompt: Prompt;
+}
+
+export interface CampaignWithAssets extends Campaign {
+  prompts: Prompt[];
+  assets: Asset[];
+}
