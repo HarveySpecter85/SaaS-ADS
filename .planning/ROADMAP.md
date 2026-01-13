@@ -18,7 +18,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] **Phase 1: Foundation** - Next.js + Supabase setup, auth, base layout
 - [x] **Phase 2: Brand Ingestion** - PDF parsing for brand guidelines, hex/font/tone extraction
-- [ ] **Phase 3: Asset Anchoring** - Product image upload, geometry "lock" system
+- [x] **Phase 3: Asset Anchoring** - Product image upload, geometry "lock" system
 - [ ] **Phase 4: Prompt Generation** - Persona-based prompt sets, 50+ variations per set
 - [ ] **Phase 5: Asset Gallery** - Generated asset management, filters, search, export
 - [ ] **Phase 6: External Data** - CRM, weather, stock data connections
@@ -54,9 +54,12 @@ Plans:
 ### Phase 3: Asset Anchoring
 **Goal**: Upload "Source of Truth" product images and create geometry "anchors" to prevent hallucinations
 **Depends on**: Phase 2
-**Research**: Likely (Imagen 3 API, few-shot approach)
-**Research topics**: Imagen 3 API for image generation, product anchoring techniques, Google AI Studio integration
-**Plans**: TBD
+**Research**: Not needed (established patterns from Phase 2)
+**Plans**: 2 plans
+
+Plans:
+- [x] 03-01: Asset Data Foundation (database types + CRUD API + image upload)
+- [x] 03-02: Asset UI (product list + profile page with image gallery)
 
 ### Phase 4: Prompt Generation
 **Goal**: Generate persona-based prompt sets and produce 50+ creative variations per prompt set
@@ -113,7 +116,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 →
 |-------|----------------|--------|-----------|
 | 1. Foundation | 3/3 | Complete | 2026-01-13 |
 | 2. Brand Ingestion | 3/3 | Complete | 2026-01-13 |
-| 3. Asset Anchoring | 0/TBD | Not started | - |
+| 3. Asset Anchoring | 2/2 | Complete | 2026-01-13 |
 | 4. Prompt Generation | 0/TBD | Not started | - |
 | 5. Asset Gallery | 0/TBD | Not started | - |
 | 6. External Data | 0/TBD | Not started | - |
