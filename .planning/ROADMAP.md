@@ -19,7 +19,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 1: Foundation** - Next.js + Supabase setup, auth, base layout
 - [x] **Phase 2: Brand Ingestion** - PDF parsing for brand guidelines, hex/font/tone extraction
 - [x] **Phase 3: Asset Anchoring** - Product image upload, geometry "lock" system
-- [ ] **Phase 4: Prompt Generation** - Persona-based prompt sets, 50+ variations per set
+- [x] **Phase 4: Prompt Generation** - Persona-based prompt sets, 50+ variations per set
 - [ ] **Phase 5: Asset Gallery** - Generated asset management, filters, search, export
 - [ ] **Phase 6: External Data** - CRM, weather, stock data connections
 - [ ] **Phase 7: Conversational Ads** - Embedded chat UI, FAQ automation
@@ -64,9 +64,12 @@ Plans:
 ### Phase 4: Prompt Generation
 **Goal**: Generate persona-based prompt sets and produce 50+ creative variations per prompt set
 **Depends on**: Phase 3
-**Research**: Likely (Gemini Pro prompting)
-**Research topics**: Gemini Pro for persona generation, batch prompt execution, variation strategies
-**Plans**: TBD
+**Research**: Not needed (used Gemini Flash, established patterns)
+**Plans**: 2 plans
+
+Plans:
+- [x] 04-01: Prompt Data Foundation (database types + campaign CRUD API + generation endpoint)
+- [x] 04-02: Prompt Generation UI (campaign list + profile with prompts + creation wizard)
 
 ### Phase 5: Asset Gallery
 **Goal**: Gallery view for generated assets with filters, search, and campaign export packages
@@ -117,7 +120,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 →
 | 1. Foundation | 3/3 | Complete | 2026-01-13 |
 | 2. Brand Ingestion | 3/3 | Complete | 2026-01-13 |
 | 3. Asset Anchoring | 2/2 | Complete | 2026-01-13 |
-| 4. Prompt Generation | 0/TBD | Not started | - |
+| 4. Prompt Generation | 2/2 | Complete | 2026-01-13 |
 | 5. Asset Gallery | 0/TBD | Not started | - |
 | 6. External Data | 0/TBD | Not started | - |
 | 7. Conversational Ads | 0/TBD | Not started | - |
