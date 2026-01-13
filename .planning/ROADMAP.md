@@ -22,7 +22,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 4: Prompt Generation** - Persona-based prompt sets, 50+ variations per set
 - [x] **Phase 5: Asset Gallery** - Generated asset management, filters, search, export
 - [x] **Phase 6: External Data** - Weather integration, data sources, trigger rules
-- [ ] **Phase 7: Conversational Ads** - Embedded chat UI, FAQ automation
+- [x] **Phase 7: Conversational Ads** - Embedded chat UI, FAQ automation
 - [ ] **Phase 8: Server-Side Tracking** - CAPI implementation, Enhanced Conversions
 - [ ] **Phase 9: Campaign Dashboard** - Client campaigns, metrics, multi-client management
 - [ ] **Phase 10: Polish & Integration** - Final integration, testing, deployment
@@ -96,9 +96,14 @@ Plans:
 ### Phase 7: Conversational Ads
 **Goal**: Embedded chat UI for conversational ads, FAQ automation, inventory integration
 **Depends on**: Phase 6
-**Research**: Likely (Gemini chat integration)
+**Research**: Completed (Gemini chat integration)
 **Research topics**: Gemini for conversational AI, chat embedding patterns, FAQ training
-**Plans**: TBD
+**Plans**: 3 plans
+
+Plans:
+- [x] 07-01: Chat UI Foundation (ChatMessage, ChatBubble, ChatWidget, /chat page)
+- [x] 07-02: Gemini Chat Backend (streaming responses, brand awareness)
+- [x] 07-03: Product Recommendations (criteria extraction, inline product cards)
 
 ### Phase 8: Server-Side Tracking
 **Goal**: CAPI implementation, Enhanced Conversions setup, first-party data pipeline
@@ -132,7 +137,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 →
 | 4. Prompt Generation | 2/2 | Complete | 2026-01-13 |
 | 5. Asset Gallery | 3/3 | Complete | 2026-01-13 |
 | 6. External Data | 3/3 | Complete | 2026-01-13 |
-| 7. Conversational Ads | 0/TBD | Not started | - |
+| 7. Conversational Ads | 3/3 | Complete | 2026-01-13 |
 | 8. Server-Side Tracking | 0/TBD | Not started | - |
 | 9. Campaign Dashboard | 0/TBD | Not started | - |
 | 10. Polish & Integration | 0/TBD | Not started | - |
