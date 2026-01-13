@@ -1,0 +1,464 @@
+"use client";
+
+import { useState, useMemo } from "react";
+import Link from "next/link";
+import type { Campaign, Asset, Prompt, CampaignGoal } from "@/lib/supabase/database.types";
+import { CampaignSection } from "@/components/campaign-section";
+
+// Extended campaign type with product name and asset count
+interface CampaignWithAssetCount extends Campaign {
+  product_name: string;
+  asset_count: number;
+}
+
+interface GalleryData {
+  campaigns: CampaignWithAssetCount[];
+  products: Array<{ id: string; name: string }>;
+  assets: Asset[];
+  prompts: Prompt[];
+}
+
+interface GalleryClientProps {
+  data: GalleryData;
+}
+
+// Goal filter options
+const goalOptions: Array<{ value: CampaignGoal | "all"; label: string }> = [
+  { value: "all", label: "All Goals" },
+  { value: "awareness", label: "Awareness" },
+  { value: "lead_gen", label: "Lead Gen" },
+  { value: "conversion", label: "Conversion" },
+];
+
+export function GalleryClient({ data }: GalleryClientProps) {
+  const { campaigns, products, assets, prompts } = data;
+
+  // Filter state
+  const [selectedCampaignId, setSelectedCampaignId] = useState<string>("all");
+  const [selectedGoal, setSelectedGoal] = useState<CampaignGoal | "all">("all");
+  const [selectedProductId, setSelectedProductId] = useState<string>("all");
+  const [searchQuery, setSearchQuery] = useState("");
+
+  // Selection state
+  const [selectedAssetIds, setSelectedAssetIds] = useState<Set<string>>(new Set());
+
+  // Track last selected asset for shift-click range selection
+  const [lastSelectedAssetId, setLastSelectedAssetId] = useState<string | null>(null);
+
+  // Lightbox state
+  const [lightboxAsset, setLightboxAsset] = useState<Asset | null>(null);
+
+  // Create maps for quick lookups
+  const assetsByCampaign = useMemo(() => {
+    const map = new Map<string, Asset[]>();
+    assets.forEach((asset) => {
+      const list = map.get(asset.campaign_id) || [];
+      list.push(asset);
+      map.set(asset.campaign_id, list);
+    });
+    return map;
+  }, [assets]);
+
+  const promptsById = useMemo(() => {
+    const map = new Map<string, Prompt>();
+    prompts.forEach((prompt) => {
+      map.set(prompt.id, prompt);
+    });
+    return map;
+  }, [prompts]);
+
+  // Filter campaigns based on selected filters
+  const filteredCampaigns = useMemo(() => {
+    return campaigns.filter((campaign) => {
+      // Filter by specific campaign
+      if (selectedCampaignId !== "all" && campaign.id !== selectedCampaignId) {
+        return false;
+      }
+
+      // Filter by goal
+      if (selectedGoal !== "all" && campaign.goal !== selectedGoal) {
+        return false;
+      }
+
+      // Filter by product
+      if (selectedProductId !== "all" && campaign.product_id !== selectedProductId) {
+        return false;
+      }
+
+      // Filter by search query (search in prompt headlines/descriptions)
+      if (searchQuery.trim()) {
+        const campaignAssets = assetsByCampaign.get(campaign.id) || [];
+        const matchingAssets = campaignAssets.some((asset) => {
+          const prompt = promptsById.get(asset.prompt_id);
+          if (!prompt) return false;
+          const searchLower = searchQuery.toLowerCase();
+          return (
+            prompt.headline?.toLowerCase().includes(searchLower) ||
+            prompt.description?.toLowerCase().includes(searchLower) ||
+            prompt.prompt_text?.toLowerCase().includes(searchLower)
+          );
+        });
+        if (!matchingAssets && campaignAssets.length > 0) {
+          return false;
+        }
+      }
+
+      return true;
+    });
+  }, [campaigns, selectedCampaignId, selectedGoal, selectedProductId, searchQuery, assetsByCampaign, promptsById]);
+
+  // Get filtered assets for each campaign (respecting search)
+  const getFilteredAssetsForCampaign = (campaignId: string): Asset[] => {
+    const campaignAssets = assetsByCampaign.get(campaignId) || [];
+
+    if (!searchQuery.trim()) {
+      return campaignAssets;
+    }
+
+    return campaignAssets.filter((asset) => {
+      const prompt = promptsById.get(asset.prompt_id);
+      if (!prompt) return false;
+      const searchLower = searchQuery.toLowerCase();
+      return (
+        prompt.headline?.toLowerCase().includes(searchLower) ||
+        prompt.description?.toLowerCase().includes(searchLower) ||
+        prompt.prompt_text?.toLowerCase().includes(searchLower)
+      );
+    });
+  };
+
+  // Total filtered assets count
+  const totalFilteredAssets = filteredCampaigns.reduce((sum, campaign) => {
+    return sum + getFilteredAssetsForCampaign(campaign.id).length;
+  }, 0);
+
+  // Check if any filters are active
+  const hasActiveFilters =
+    selectedCampaignId !== "all" ||
+    selectedGoal !== "all" ||
+    selectedProductId !== "all" ||
+    searchQuery.trim() !== "";
+
+  // Clear all filters
+  const clearFilters = () => {
+    setSelectedCampaignId("all");
+    setSelectedGoal("all");
+    setSelectedProductId("all");
+    setSearchQuery("");
+  };
+
+  // Handle asset selection
+  const handleAssetSelect = (assetId: string, shiftKey: boolean) => {
+    setSelectedAssetIds((prev) => {
+      const newSet = new Set(prev);
+
+      if (shiftKey && lastSelectedAssetId) {
+        // Range selection with shift
+        const allVisibleAssets = filteredCampaigns.flatMap((c) =>
+          getFilteredAssetsForCampaign(c.id)
+        );
+        const assetIds = allVisibleAssets.map((a) => a.id);
+        const lastIndex = assetIds.indexOf(lastSelectedAssetId);
+        const currentIndex = assetIds.indexOf(assetId);
+
+        if (lastIndex !== -1 && currentIndex !== -1) {
+          const start = Math.min(lastIndex, currentIndex);
+          const end = Math.max(lastIndex, currentIndex);
+          for (let i = start; i <= end; i++) {
+            newSet.add(assetIds[i]);
+          }
+        }
+      } else {
+        // Toggle single selection
+        if (newSet.has(assetId)) {
+          newSet.delete(assetId);
+        } else {
+          newSet.add(assetId);
+        }
+      }
+
+      return newSet;
+    });
+    setLastSelectedAssetId(assetId);
+  };
+
+  // Handle select all in campaign
+  const handleSelectAllInCampaign = (campaignId: string, assetIds: string[]) => {
+    setSelectedAssetIds((prev) => {
+      const newSet = new Set(prev);
+      const allSelected = assetIds.every((id) => newSet.has(id));
+
+      if (allSelected) {
+        // Deselect all
+        assetIds.forEach((id) => newSet.delete(id));
+      } else {
+        // Select all
+        assetIds.forEach((id) => newSet.add(id));
+      }
+
+      return newSet;
+    });
+  };
+
+  // Handle asset click (open lightbox)
+  const handleAssetClick = (asset: Asset) => {
+    setLightboxAsset(asset);
+  };
+
+  // Clear selection
+  const clearSelection = () => {
+    setSelectedAssetIds(new Set());
+    setLastSelectedAssetId(null);
+  };
+
+  // Empty state - no campaigns
+  if (campaigns.length === 0) {
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <h1 className="text-2xl font-semibold text-slate-900">Asset Gallery</h1>
+        </div>
+
+        <div className="rounded-lg border border-dashed border-slate-300 bg-slate-50 p-12 text-center">
+          <svg
+            className="mx-auto h-12 w-12 text-slate-400"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            strokeWidth={1}
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z"
+            />
+          </svg>
+          <h3 className="mt-4 text-lg font-medium text-slate-900">
+            No assets yet
+          </h3>
+          <p className="mt-2 text-sm text-slate-600">
+            Generate assets from your campaigns to see them here.
+          </p>
+          <Link
+            href="/campaigns"
+            className="mt-4 inline-flex items-center gap-2 rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 transition-colors"
+          >
+            Go to Campaigns
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-semibold text-slate-900">Asset Gallery</h1>
+          <p className="text-sm text-slate-500 mt-1">
+            {totalFilteredAssets} {totalFilteredAssets === 1 ? "asset" : "assets"}
+            {hasActiveFilters && " (filtered)"}
+          </p>
+        </div>
+      </div>
+
+      {/* Filter Bar - Sticky */}
+      <div className="sticky top-0 z-20 bg-white py-4 -mx-1 px-1 border-b border-slate-200">
+        <div className="flex items-center gap-4 flex-wrap">
+          {/* Campaign Dropdown */}
+          <select
+            value={selectedCampaignId}
+            onChange={(e) => setSelectedCampaignId(e.target.value)}
+            className="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+          >
+            <option value="all">All Campaigns</option>
+            {campaigns.map((campaign) => (
+              <option key={campaign.id} value={campaign.id}>
+                {campaign.name}
+              </option>
+            ))}
+          </select>
+
+          {/* Goal Filter Pills */}
+          <div className="flex items-center gap-1">
+            {goalOptions.map((option) => (
+              <button
+                key={option.value}
+                onClick={() => setSelectedGoal(option.value)}
+                className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
+                  selectedGoal === option.value
+                    ? "bg-slate-900 text-white"
+                    : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                }`}
+              >
+                {option.label}
+              </button>
+            ))}
+          </div>
+
+          {/* Product Dropdown */}
+          <select
+            value={selectedProductId}
+            onChange={(e) => setSelectedProductId(e.target.value)}
+            className="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+          >
+            <option value="all">All Products</option>
+            {products.map((product) => (
+              <option key={product.id} value={product.id}>
+                {product.name}
+              </option>
+            ))}
+          </select>
+
+          {/* Search Box */}
+          <div className="relative flex-1 min-w-[200px]">
+            <svg
+              className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth={2}
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"
+              />
+            </svg>
+            <input
+              type="text"
+              placeholder="Search by headline or description..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full rounded-md border border-slate-300 bg-white pl-10 pr-3 py-2 text-sm text-slate-900 shadow-sm placeholder:text-slate-400 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+            />
+          </div>
+
+          {/* Clear Filters */}
+          {hasActiveFilters && (
+            <button
+              onClick={clearFilters}
+              className="text-sm text-blue-600 hover:text-blue-700 font-medium"
+            >
+              Clear filters
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* Gallery Body - Campaign Sections */}
+      <div className="space-y-6">
+        {filteredCampaigns.length > 0 ? (
+          filteredCampaigns.map((campaign) => {
+            const campaignAssets = getFilteredAssetsForCampaign(campaign.id);
+            return (
+              <CampaignSection
+                key={campaign.id}
+                campaign={campaign}
+                productName={campaign.product_name}
+                assets={campaignAssets}
+                selectedAssetIds={selectedAssetIds}
+                onAssetSelect={handleAssetSelect}
+                onAssetClick={handleAssetClick}
+                onSelectAllInCampaign={handleSelectAllInCampaign}
+              />
+            );
+          })
+        ) : (
+          <div className="rounded-lg border border-dashed border-slate-300 bg-slate-50 p-12 text-center">
+            <svg
+              className="mx-auto h-12 w-12 text-slate-400"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth={1}
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"
+              />
+            </svg>
+            <h3 className="mt-4 text-lg font-medium text-slate-900">
+              No matching assets
+            </h3>
+            <p className="mt-2 text-sm text-slate-600">
+              Try adjusting your filters to find what you&apos;re looking for.
+            </p>
+            <button
+              onClick={clearFilters}
+              className="mt-4 inline-flex items-center gap-2 rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 transition-colors"
+            >
+              Clear Filters
+            </button>
+          </div>
+        )}
+      </div>
+
+      {/* Floating Action Bar - Selection Mode */}
+      {selectedAssetIds.size > 0 && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-30">
+          <div className="flex items-center gap-4 bg-slate-900 text-white px-6 py-3 rounded-full shadow-xl">
+            <span className="text-sm font-medium">
+              {selectedAssetIds.size} selected
+            </span>
+            <div className="w-px h-5 bg-slate-700" />
+            <button
+              className="text-sm font-medium hover:text-blue-300 transition-colors"
+              onClick={() => {
+                // Export functionality will be added in Plan 03
+                alert("Export functionality coming in Plan 03");
+              }}
+            >
+              Export
+            </button>
+            <button
+              onClick={clearSelection}
+              className="text-sm text-slate-400 hover:text-white transition-colors"
+            >
+              Clear
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Lightbox placeholder - will be fully implemented in Task 3 */}
+      {lightboxAsset && (
+        <div
+          className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-8"
+          onClick={() => setLightboxAsset(null)}
+        >
+          <div
+            className="relative max-w-4xl max-h-full"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <img
+              src={lightboxAsset.image_url}
+              alt={`Asset ${lightboxAsset.id}`}
+              className="max-w-full max-h-[80vh] object-contain rounded-lg"
+            />
+            <button
+              onClick={() => setLightboxAsset(null)}
+              className="absolute top-4 right-4 p-2 bg-black/50 rounded-full text-white hover:bg-black/70 transition-colors"
+            >
+              <svg
+                className="w-6 h-6"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={2}
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              </svg>
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
