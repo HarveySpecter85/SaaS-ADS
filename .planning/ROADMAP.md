@@ -119,8 +119,13 @@ Plans:
 ### Phase 9: Campaign Dashboard
 **Goal**: Dashboard showing campaigns per client, creative history, API usage metrics
 **Depends on**: Phase 5, Phase 7, Phase 8
-**Research**: Unlikely (internal dashboard patterns)
-**Plans**: TBD
+**Research**: Not needed (internal dashboard patterns)
+**Plans**: 3 plans
+
+Plans:
+- [ ] 09-01: API Usage Tracking (database + types + tracking utilities + API)
+- [ ] 09-02: Dashboard Metrics (metrics API + dashboard home page with live data)
+- [ ] 09-03: Navigation & Settings (sidebar update + settings page)
 
 ### Phase 10: Polish & Integration
 **Goal**: Final integration testing, performance optimization, production deployment
