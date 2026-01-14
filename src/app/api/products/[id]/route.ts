@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { requireAuth } from "@/lib/api-auth";
 import type { ProductWithImages } from "@/lib/supabase/database.types";
 
 // Validate UUID format
@@ -14,6 +15,9 @@ export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const auth = await requireAuth();
+  if (auth.error) return auth.error;
+
   try {
     const { id } = await params;
 
@@ -64,6 +68,9 @@ export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const auth = await requireAuth();
+  if (auth.error) return auth.error;
+
   try {
     const { id } = await params;
 
@@ -144,6 +151,9 @@ export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const auth = await requireAuth();
+  if (auth.error) return auth.error;
+
   try {
     const { id } = await params;
 

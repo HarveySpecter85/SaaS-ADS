@@ -1,10 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
+import { requireAuth } from '@/lib/api-auth';
 import { prepareConversionEvent, generateEventId } from '@/lib/conversions';
 import { ConversionEventInsert } from '@/lib/supabase/database.types';
 
 // GET: List conversion events (with filters)
 export async function GET(request: NextRequest) {
+  const auth = await requireAuth();
+  if (auth.error) return auth.error;
+
   const supabase = await createClient();
   const { searchParams } = new URL(request.url);
 
@@ -35,6 +39,9 @@ export async function GET(request: NextRequest) {
 
 // POST: Create new conversion event
 export async function POST(request: NextRequest) {
+  const auth = await requireAuth();
+  if (auth.error) return auth.error;
+
   const supabase = await createClient();
   const body = await request.json() as ConversionEventInsert;
 

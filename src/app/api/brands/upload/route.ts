@@ -1,11 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { requireAuth } from "@/lib/api-auth";
 import { extractTextFromPdf } from "@/lib/pdf-extraction";
 import { extractBrandFromText } from "@/lib/gemini";
 import type { BrandWithRelations } from "@/lib/supabase/database.types";
 
 // POST: Upload PDF, extract brand data, create brand record
 export async function POST(request: NextRequest) {
+  const auth = await requireAuth();
+  if (auth.error) return auth.error;
+
   try {
     const supabase = await createClient();
 

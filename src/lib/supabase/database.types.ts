@@ -3,6 +3,7 @@ export interface Brand {
   name: string;
   description: string | null;
   source_pdf_url: string | null;
+  user_id: string | null; // Owner of this brand (for multi-tenancy)
   created_at: string;
   updated_at: string;
 }
@@ -151,6 +152,7 @@ export interface DataSource {
   type: DataSourceType;
   config: DataSourceConfig;
   is_active: boolean;
+  user_id: string | null; // Owner of this data source (for multi-tenancy)
   last_sync_at: string | null;
   created_at: string;
   updated_at: string;

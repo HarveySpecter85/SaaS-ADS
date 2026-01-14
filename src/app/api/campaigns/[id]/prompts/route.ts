@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { requireAuth } from "@/lib/api-auth";
 import { gemini } from "@/lib/gemini";
 import type { CampaignGoal, Prompt } from "@/lib/supabase/database.types";
 
@@ -105,6 +106,9 @@ export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const auth = await requireAuth();
+  if (auth.error) return auth.error;
+
   try {
     const { id } = await params;
 
@@ -278,6 +282,9 @@ export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const auth = await requireAuth();
+  if (auth.error) return auth.error;
+
   try {
     const { id } = await params;
 

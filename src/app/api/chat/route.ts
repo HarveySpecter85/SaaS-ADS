@@ -1,12 +1,16 @@
 import { NextRequest } from 'next/server';
 import { streamChatResponse, ChatMessage, ChatContext } from '@/lib/chat';
 import { createClient } from '@/lib/supabase/server';
+import { requireAuth } from '@/lib/api-auth';
 import { extractProductCriteria, findMatchingProducts } from '@/lib/product-matcher';
 
 // Delimiter for recommendations in stream
 const RECOMMENDATIONS_DELIMITER = '\n---RECOMMENDATIONS---\n';
 
 export async function POST(request: NextRequest) {
+  const auth = await requireAuth();
+  if (auth.error) return auth.error;
+
   try {
     const { messages, brandId } = await request.json() as {
       messages: ChatMessage[];

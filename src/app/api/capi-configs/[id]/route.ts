@@ -1,11 +1,25 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
+import { requireAuth } from '@/lib/api-auth';
 
-// GET: Get single CAPI config
+// Helper to strip sensitive token fields from response
+function sanitizeConfig(config: Record<string, unknown>) {
+  const { access_token, refresh_token, ...safe } = config;
+  return {
+    ...safe,
+    has_access_token: !!access_token,
+    has_refresh_token: !!refresh_token,
+  };
+}
+
+// GET: Get single CAPI config (tokens hidden for security)
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const auth = await requireAuth();
+  if (auth.error) return auth.error;
+
   const { id } = await params;
   const supabase = await createClient();
 
@@ -19,7 +33,8 @@ export async function GET(
     return NextResponse.json({ error: error.message }, { status: 404 });
   }
 
-  return NextResponse.json(data);
+  // Strip sensitive tokens from response
+  return NextResponse.json(sanitizeConfig(data));
 }
 
 // PATCH: Update CAPI config
@@ -27,6 +42,9 @@ export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const auth = await requireAuth();
+  if (auth.error) return auth.error;
+
   const { id } = await params;
   const supabase = await createClient();
   const body = await request.json();
@@ -68,7 +86,8 @@ export async function PATCH(
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
-  return NextResponse.json(data);
+  // Strip sensitive tokens from response
+  return NextResponse.json(sanitizeConfig(data));
 }
 
 // DELETE: Delete CAPI config
@@ -76,6 +95,9 @@ export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const auth = await requireAuth();
+  if (auth.error) return auth.error;
+
   const { id } = await params;
   const supabase = await createClient();
 

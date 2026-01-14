@@ -1,9 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { requireAuth } from "@/lib/api-auth";
 import type { Brand, BrandWithRelations } from "@/lib/supabase/database.types";
 
 // GET: List all brands with their colors, fonts, and tone
 export async function GET() {
+  const auth = await requireAuth();
+  if (auth.error) return auth.error;
+
   try {
     const supabase = await createClient();
 
@@ -51,6 +55,9 @@ export async function GET() {
 
 // POST: Create a new brand
 export async function POST(request: NextRequest) {
+  const auth = await requireAuth();
+  if (auth.error) return auth.error;
+
   try {
     const supabase = await createClient();
     const body = await request.json();

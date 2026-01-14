@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { requireAuth } from "@/lib/api-auth";
 import type { AdPlatform } from "@/lib/supabase/database.types";
 
 // Validate UUID format
@@ -14,6 +15,9 @@ const VALID_PLATFORMS: AdPlatform[] = ['google_ads', 'meta', 'tiktok'];
 
 // GET: List all assets (filter by campaign_id, prompt_id, platform query params)
 export async function GET(request: NextRequest) {
+  const auth = await requireAuth();
+  if (auth.error) return auth.error;
+
   try {
     const supabase = await createClient();
     const { searchParams } = new URL(request.url);

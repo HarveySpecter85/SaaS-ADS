@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
+import { requireAuth } from '@/lib/api-auth';
 import { uploadConversions, CAPISyncResult } from '@/lib/google-capi';
 import { ConversionEvent, CAPIConfig } from '@/lib/supabase/database.types';
 
@@ -14,6 +15,9 @@ interface SyncResult {
 
 // POST: Sync pending conversion events to Google Ads
 export async function POST(request: NextRequest) {
+  const auth = await requireAuth();
+  if (auth.error) return auth.error;
+
   const supabase = await createClient();
   const { searchParams } = new URL(request.url);
 
@@ -160,6 +164,9 @@ export async function POST(request: NextRequest) {
 
 // GET: Get sync status for all brands
 export async function GET() {
+  const auth = await requireAuth();
+  if (auth.error) return auth.error;
+
   const supabase = await createClient();
 
   const { data: configs, error } = await supabase

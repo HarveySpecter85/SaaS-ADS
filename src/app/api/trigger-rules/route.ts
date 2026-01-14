@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { requireAuth } from "@/lib/api-auth";
 import type {
   TriggerRule,
   TriggerRuleWithSource,
@@ -34,6 +35,9 @@ function isValidUUID(id: string): boolean {
 
 // GET: List all trigger rules (filter by data_source_id, is_active)
 export async function GET(request: NextRequest) {
+  const auth = await requireAuth();
+  if (auth.error) return auth.error;
+
   try {
     const supabase = await createClient();
     const { searchParams } = new URL(request.url);
@@ -86,6 +90,9 @@ export async function GET(request: NextRequest) {
 
 // POST: Create new trigger rule
 export async function POST(request: NextRequest) {
+  const auth = await requireAuth();
+  if (auth.error) return auth.error;
+
   try {
     const supabase = await createClient();
     const body = await request.json();

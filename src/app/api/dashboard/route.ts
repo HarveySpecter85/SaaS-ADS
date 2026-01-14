@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
+import { requireAuth } from '@/lib/api-auth';
 import { getUsageStats } from '@/lib/api-usage';
 
 export interface DashboardMetrics {
@@ -33,6 +34,9 @@ export interface DashboardMetrics {
 }
 
 export async function GET() {
+  const auth = await requireAuth();
+  if (auth.error) return auth.error;
+
   const supabase = await createClient();
 
   // Fetch all metrics in parallel
